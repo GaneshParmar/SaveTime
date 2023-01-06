@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="colorPrimary">#1565c0</color>
+    <color name="colorPrimaryLight">#5e92f3</color>
+    <color name="colorPrimaryDark">#003c8f</color>
+    <color name="colorAccent">#dd2c00</color>
+    <color name="colorAccentLight">#e35183</color>
+    <color name="colorAccentDark">#a30000</color>
+    <color name="primaryTextColor">#ffffff</color>
+    <color name="secondaryTextColor">#ffffff</color>
+    <color name="separator">#aa000000</color>
+
+    <color name="Onboarding1">#0097A7</color>
+    <color name="Onboarding2">#e35183</color>
+    <color name="Onboarding3">#43A047</color>
+
+</resources>
