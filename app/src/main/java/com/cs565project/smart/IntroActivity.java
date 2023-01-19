@@ -20,6 +20,8 @@ import static com.cs565project.smart.util.DbUtils.KEY_APPS_UPDATED_IN_DB;
  */
 public class IntroActivity extends AppIntro {
 
+    public static boolean isonlyEntertainementSetting;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -28,10 +30,16 @@ public class IntroActivity extends AppIntro {
 
         // Add your slide fragments here.
         // AppIntro will automatically generate the dots indicator and buttons.
-        addSlide(new PermissionsFragment());
-//        addSlide(new AccountFragment());
-        addSlide(new OnboardingRestrictionsFragment());
-        addSlide(new RecommendationSettingsFragment());
+
+        if(!isonlyEntertainementSetting){
+            addSlide(new PermissionsFragment());
+            addSlide(new OnboardingRestrictionsFragment());
+            addSlide(new RecommendationSettingsFragment());
+
+        }
+        else{
+            addSlide(new OnboardingRestrictionsFragment());
+        }
 
 
         // OPTIONAL METHODS

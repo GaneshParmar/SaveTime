@@ -30,6 +30,9 @@ import com.cs565project.smart.util.DbUtils;
 import com.cs565project.smart.util.PreferencesHelper;
 import com.cs565project.smart.util.UsageStatsUtil;
 
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
@@ -44,15 +47,34 @@ public class AppMonitorService extends Service {
 
     private static final String CHANNEL_ID = "persistent";
 
+    //added 08/01/2022
+    public static final String ThreshHoldEntertainmentTime="thresoldEnterTime";
+    public static final String leftEntertainmentTime="leftEnterTime";
+    public static final String TodaysDate="todayDate";
+    public static final long defaultThresholdEnterTime=5400000;
+    public long diffInTime;
+
+    //10/01/2023
+    public static final String UserPreferenceEntertainmentTime="UserPreferenceEntertainmentTime";
+
     public static final String ACTION_START_SERVICE = "start_service";
     public static final String ACTION_STOP_SERVICE = "stop_service";
     public static final String ACTION_TOGGLE_SERVICE = "toggle_service";
     public static final String ACTION_BYPASS_BLOCK = "bypass_block";
     public static final String KEY_SERVICE_RUNNING = "service_running";
 
+
     private static final int CYCLE_DELAY = 200;
     private static final int DATA_UPDATE_DELAY = 20000;
     private static final int NEWS_UPDATE_DELAY = (int) DateUtils.HOUR_IN_MILLIS;
+
+
+    //All data related to entertainment time
+    private String todayDate;
+    private String todaysDateString;
+    private Long threasholdEnterTainementTime;
+    private Long leftEnterTainmentTime;
+    long userPreferenceEntertainemntTime;
 
     private UsageStatsUtil myUsageStatsUtil;
     private BlockOverlay myOverlay;
@@ -62,12 +84,57 @@ public class AppMonitorService extends Service {
     private boolean updateNotification = false;
     private String myCurrentApp;
     private boolean myBlockBypassed = false;
+    private boolean entertainmentBlock;
 
     private Executor myExecutor = Executors.newFixedThreadPool(3);
     private Handler myHandler = new Handler();
     private Runnable myBgJob = new Runnable() {
         @Override
         public void run() {
+
+
+            //added 08/01/2023
+            todayDate=PreferencesHelper.getStringPreference(getApplicationContext(),TodaysDate,"Not Recorded");
+            threasholdEnterTainementTime=PreferencesHelper.getLongPreference(getApplicationContext(),ThreshHoldEntertainmentTime,defaultThresholdEnterTime);
+            leftEnterTainmentTime=PreferencesHelper.getLongPreference(getApplicationContext(),leftEntertainmentTime,0);
+            // added 10/01/2023
+            userPreferenceEntertainemntTime=PreferencesHelper.getLongPreference(AppMonitorService.this,UserPreferenceEntertainmentTime,defaultThresholdEnterTime);
+
+//            boolean entered=PreferencesHelper.getBoolPreference(getApplicationContext(),"entered22",false);
+//            Log.d("Check date equal ",""+checkIfDateChanged());
+//
+//            Log.d("Check date equal 1",todaysDateString+"" );
+//            Log.d("Check date equal 1",todayDate+"" );
+
+            if(checkIfDateChanged()){
+
+
+
+                PreferencesHelper.setPreference(AppMonitorService.this,ThreshHoldEntertainmentTime,defaultThresholdEnterTime);
+                threasholdEnterTainementTime=PreferencesHelper.getLongPreference(getApplicationContext(),UserPreferenceEntertainmentTime,defaultThresholdEnterTime);
+
+                PreferencesHelper.setPreference(getApplicationContext(),TodaysDate,todaysDateString);
+                PreferencesHelper.setPreference(getApplicationContext(),leftEntertainmentTime,threasholdEnterTainementTime);
+//                setThresholdEntertainmentTime();
+
+                diffInTime=calculateDiffInTime(-2,-1);
+
+                if(!(diffInTime==0)){
+
+                    threasholdEnterTainementTime=getThresholdEntertainmentTime(diffInTime);
+
+                }
+
+                PreferencesHelper.setPreference(AppMonitorService.this,ThreshHoldEntertainmentTime,threasholdEnterTainementTime);
+
+            }
+
+
+
+
+
+//            Log.d("Check Usage",""+UsageStatsUtil.formatDuration(diffInTime,getApplicationContext()));
+
             String currentApp = myUsageStatsUtil.getForegroundApp();
 
             // Adding/removing overlay should happen in the main thread.
@@ -76,7 +143,7 @@ public class AppMonitorService extends Service {
                     AppDao dao = AppDatabase.getAppDatabase(AppMonitorService.this).appDao();
                     AppDetails details = dao.getAppDetails(currentApp);
 
-                    myOverlay.setApp(details, new AppInfo(currentApp, getApplicationContext()).getAppIcon());
+                    myOverlay.setApp(details, new AppInfo(currentApp, getApplicationContext()).getAppIcon(),entertainmentBlock,UsageStatsUtil.formatDuration( getThresholdEntertainmentTime(calculateDiffInTime(-1,0)),AppMonitorService.this));
                     if (!myOverlay.isVisible()) {
                         myHandler.post(myShowOverlay);
                     }
@@ -92,7 +159,67 @@ public class AppMonitorService extends Service {
                 myHandler.postDelayed(myBgJobStarter, CYCLE_DELAY);
             }
         }
+
+        private Long getThresholdEntertainmentTime(long diffInTime) {
+
+            if(diffInTime==0){
+                return userPreferenceEntertainemntTime;
+            }
+            else if(diffInTime>0){
+
+                return threasholdEnterTainementTime+(diffInTime/3);
+
+            }
+            else{
+
+                return threasholdEnterTainementTime-(2*(Math.abs(diffInTime)/3));
+            }
+
+        }
+
+        private long calculateDiffInTime(int x,int y) {
+
+
+
+            AppDao dao = AppDatabase.getAppDatabase(getApplicationContext()).appDao();
+
+
+            final Calendar cal = Calendar.getInstance();
+
+            cal.add(Calendar.DATE, y);
+            long yesterdayDay=cal.getTimeInMillis();
+
+            final Calendar cal1 = Calendar.getInstance();
+            cal1.add(Calendar.DATE,  x);
+            long daybeforeyesterdayDate=cal1.getTimeInMillis();
+
+
+
+            long yesterDayUsage=dao.getTotalUsageTime(new Date(UsageStatsUtil.getStartOfDayMillis(new Date(yesterdayDay))));
+            long dayBeforeYesterdayUsage=dao.getTotalUsageTime(new Date(UsageStatsUtil.getStartOfDayMillis(new Date(daybeforeyesterdayDate))));
+
+
+            if(dayBeforeYesterdayUsage==0){
+                dayBeforeYesterdayUsage=yesterDayUsage;
+            }
+
+            return dayBeforeYesterdayUsage - yesterDayUsage;
+
+        }
     };
+
+    private boolean checkIfDateChanged() {
+
+        todaysDateString=""+new java.util.Date().getDate();
+
+//        Log.d("Check date equal ",todaysDateString+"" );
+//        Log.d("Check date equal ",todayDate+"" );
+
+//
+        return !(todaysDateString.equals(todayDate));
+
+    }
+
     private Runnable myBgJobStarter = new BgStarter(myBgJob);
 
     private Runnable myUpdateDb = new Runnable() {
@@ -129,9 +256,16 @@ public class AppMonitorService extends Service {
         @Override
         public void run() {
             Log.d("SMART", "Updating news");
+
             List<NewsItem> recommendedNews = NewsItem.getRecommendedNews(AppMonitorService.this);
             if (recommendedNews != null && !recommendedNews.isEmpty()) {
+
+                Log.d("News","is not empty");
                 myOverlay.setNewsItems(recommendedNews);
+            }
+            else{
+                Log.d("News","is empty");
+
             }
             myOverlay.setActivities(ActivityRecommender.getRecommendedActivities(
                     AppDatabase.getAppDatabase(AppMonitorService.this).appDao().getRecommendationActivities()
@@ -238,6 +372,7 @@ public class AppMonitorService extends Service {
     }
 
     private boolean shouldBlockApp(String packageName) {
+
         if (!PreferencesHelper.getBoolPreference(this,
                 GeneralSettingsFragment.PREF_ALLOW_APP_BLOCK.getKey(), true)) {
             return false;
@@ -246,8 +381,58 @@ public class AppMonitorService extends Service {
         AppDetails details = dao.getAppDetails(packageName);
         DailyAppUsage appUsage = dao.getAppUsage(packageName, new Date(UsageStatsUtil.getStartOfDayMillis(new Date())));
 
+        entertainmentBlock=false;
+
+        if(details!=null && details.getIsEntertainmentApp()){
+
+            entertainmentTimeCheck(dao.getEntertainmentApps(),dao);
+            Log.d("Using Enter..App",details.getAppName()+" Time Left "+UsageStatsUtil.formatDuration(leftEnterTainmentTime,AppMonitorService.this));
+
+
+            if(leftEnterTainmentTime==0){
+                entertainmentBlock=true;
+                return true;
+            }
+
+        }
+
         return details != null && appUsage != null &&
                 details.getThresholdTime() > 0 && details.getThresholdTime() < appUsage.getDailyUseTime();
+
+    }
+
+    private void entertainmentTimeCheck(List<String> entertainmentApps,AppDao dao) {
+
+        long entertainmentAppTimeUsed=0;
+        for(String enterApp:entertainmentApps){
+
+
+
+
+
+            DailyAppUsage appUsage=dao.getAppUsage(enterApp,new Date(UsageStatsUtil.getStartOfDayMillis(new Date())));
+            if(appUsage!=null){
+
+                entertainmentAppTimeUsed+=appUsage.getDailyUseTime();
+
+            }
+
+
+            Log.d("Using Enter..App ",enterApp);
+            Log.d("EntertainmentTimeLeft",""+leftEnterTainmentTime);
+
+        }
+
+        Log.d("Threshold Time is ",""+UsageStatsUtil.formatDuration(threasholdEnterTainementTime,getApplicationContext()));
+        Log.d("Entertainers Time",""+UsageStatsUtil.formatDuration(entertainmentAppTimeUsed,getApplicationContext()));
+
+        long tempLeftEnterTime=(threasholdEnterTainementTime-entertainmentAppTimeUsed)<0?0:(threasholdEnterTainementTime-entertainmentAppTimeUsed);
+
+        PreferencesHelper.setPreference(AppMonitorService.this,leftEntertainmentTime,tempLeftEnterTime);
+
+        leftEnterTainmentTime=PreferencesHelper.getLongPreference(AppMonitorService.this,leftEntertainmentTime,0);
+        //
+//        return threasholdEnterTainementTime<=entertainmentAppTimeUsed;
 
     }
 

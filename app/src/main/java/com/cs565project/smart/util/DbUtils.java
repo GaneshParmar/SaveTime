@@ -44,7 +44,7 @@ public class DbUtils {
             } catch (IOException e) {
                 e.printStackTrace();
             }
-            AppDetails appDetails = new AppDetails(a.getPackageName(), a.getAppName(), category, -1);
+            AppDetails appDetails = new AppDetails(a.getPackageName(), a.getAppName(), category, -1,false);
             toAdd.add(appDetails);
             dbApps.add(a.getPackageName());
 
@@ -116,7 +116,7 @@ public class DbUtils {
                     appDetails.getPackageName(),
                     appDetails.getAppName(),
                     appDetails.getCategory(),
-                    duration));
+                    duration,false));
             postSave.run();
         }
     }

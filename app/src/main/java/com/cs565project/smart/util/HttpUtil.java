@@ -21,6 +21,8 @@ public class HttpUtil {
         URL url = new URL(urlString);
 
         connection = (HttpURLConnection) url.openConnection();
+        connection.addRequestProperty("User-Agent",
+                "Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.0)");
         // Timeout for reading InputStream arbitrarily set to 3000ms.
         connection.setReadTimeout(3000);
         // Timeout for connection.connect() arbitrarily set to 3000ms.

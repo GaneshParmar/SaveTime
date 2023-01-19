@@ -13,5 +13,13 @@
     <color name="Onboarding1">#0097A7</color>
     <color name="Onboarding2">#e35183</color>
     <color name="Onboarding3">#43A047</color>
+    <color name="transperent">#00FFFFFF</color>
+    <color name="tertiary">#4A148C</color>
+    <color name="white">#FFFFFF</color>
+    <color name="black">#2C2B2B</color>
+    <color name="gray">#6D6D6D</color>
+    <color name="brandTertiary">#644D9F</color>
+    <color name="red">#FF0000</color>
+    <color name="green">#26FF00</color>
 
 </resources>

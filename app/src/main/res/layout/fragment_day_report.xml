@@ -5,7 +5,9 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context=".fragments.DayReportFragment"
-    android:id="@+id/swipe_refresh">
+    android:id="@+id/swipe_refresh"
+    android:paddingBottom="10dp"
+    >
     <androidx.core.widget.NestedScrollView
         android:layout_width="match_parent"
         android:layout_height="match_parent">
@@ -15,20 +17,30 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:animateLayoutChanges="true">
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textAlignment="center"
+                android:text="@string/todays_usage"
+                android:textStyle="bold"
+                android:textSize="22dp"
+                android:textColor="@color/black"
+                />
             <RelativeLayout
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content">
+                android:layout_height="300dp"
+                >
                 <com.github.mikephil.charting.charts.PieChart
                     android:id="@+id/pie_chart"
-                    android:layout_width="250dp"
-                    android:layout_height="250dp"
-                    android:layout_margin="12dp"
-                    android:layout_centerInParent="true"/>
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:layout_centerInParent="true"
+                    />
                 <com.github.mikephil.charting.charts.PieChart
                     android:id="@+id/pie_chart_secondary"
-                    android:layout_width="250dp"
-                    android:layout_height="250dp"
-                    android:layout_margin="12dp"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:layout_margin="30dp"
                     android:translationX="20dp"
                     android:layout_centerInParent="true"
                     android:scaleX="0"
@@ -42,7 +54,89 @@
                 android:id="@+id/pie_categories_list"
                 android:layout_width="match_parent"
                 android:layout_height="0dp"
-                android:layout_weight="1"/>
+                android:layout_weight="1"
+                />
+            <Button
+                android:id="@+id/viewmore"
+                android:layout_width="wrap_content"
+                android:layout_height="25dp"
+                android:padding="5dp"
+                android:textSize="8sp"
+                android:layout_gravity="center"
+                android:text="@string/viewmore"
+                android:drawableRight="@drawable/ic_arrow_down"
+                android:background="@color/tertiary"
+                android:textColor="@color/white"
+                android:onClick="changeAdapterRecycleView"
+                />
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:padding="15dp">
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            tools:ignore="MissingConstraints"
+            android:orientation="vertical"
+            android:background="@drawable/entertainment_bg"
+            android:padding="5dp"
+            android:id="@+id/entertaimentDiv"
+            >
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                >
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="@string/your_entertainment_time"
+
+                    />
+                <Button
+                    android:id="@+id/entertainment_options"
+                    android:layout_width="30dp"
+                    android:layout_height="30dp"
+                    android:background="@drawable/options"
+                    />
+
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center_horizontal"
+                android:padding="10dp"
+                >
+                <TextView
+                    android:id="@+id/time_left"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="00hr:40min"
+                    android:textSize="40dp"
+                    android:layout_gravity="center"
+                    android:textColor="@color/white"
+                    />
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="/"
+                    android:textSize="40dp"
+                    />
+                <TextView
+                    android:id="@+id/entertainment_time"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="01hr:40min"
+                    android:textSize="18dp"
+                    android:textAlignment="textEnd"
+                    android:textColor="@color/black"
+                    />
+
+            </LinearLayout>
+
+        </LinearLayout>
+    </androidx.constraintlayout.widget.ConstraintLayout>
         </LinearLayout>
 
     </androidx.core.widget.NestedScrollView>

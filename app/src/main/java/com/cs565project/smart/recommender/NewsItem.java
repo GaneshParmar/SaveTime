@@ -6,6 +6,7 @@ import android.graphics.BitmapFactory;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
+import android.util.Log;
 
 import com.cs565project.smart.R;
 import com.cs565project.smart.util.HttpUtil;
@@ -62,12 +63,18 @@ public class NewsItem {
     public static List<NewsItem> getRecommendedNews(Context context) {
         // TODO customize news according to user preferences.
 
+        Log.d("News","Getting News");
+
+
         List<NewsItem> results = new ArrayList<>();
         try {
             JSONObject newsData = HttpUtil.getJson(NEWS_URL);
             JSONArray articleArray = newsData.getJSONArray("articles");
             for(int i = 0; i < Math.min(MAX_NEWS_ITEMS, articleArray.length()); i++) {
                 JSONObject article = articleArray.getJSONObject(i);
+
+                Log.d("News",article.getString("title"));
+
                 HttpUtil.ConnectionInputStream stream = null;
                 Drawable image = null;
                 try {

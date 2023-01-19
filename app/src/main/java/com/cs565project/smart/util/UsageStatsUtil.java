@@ -152,6 +152,9 @@ public class UsageStatsUtil {
 
     public static String formatDuration(long timeInMillis, Context context) {
         long totalTimeMins = timeInMillis / DateUtils.MINUTE_IN_MILLIS;
+        if(totalTimeMins == 0){
+            return "0 min";
+        }
         if (totalTimeMins < 1) {
             return  context.getString(R.string.zero_min);
         } else if (totalTimeMins < 60) {
@@ -159,6 +162,14 @@ public class UsageStatsUtil {
         } else {
             return String.format(Locale.getDefault(), context.getString(R.string.duration_hour), totalTimeMins / 60, totalTimeMins % 60);
         }
+    }
+
+    //Added 10/01/2023
+
+    public static long getMilliSeconds(int hour,int minutes,int seconds){
+
+        return hour*60*60*1000 + minutes*60*1000 + seconds*1000;
+
     }
 
     public static class ForegroundStats {

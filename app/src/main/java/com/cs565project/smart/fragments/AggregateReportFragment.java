@@ -133,7 +133,7 @@ public class AggregateReportFragment extends Fragment implements
             // Populate the usageMap.
             for (DailyAppUsage appUsage : appUsages) {
                 if (c.getPackageName().equals(appUsage.getPackageName())) { continue; }
-
+                else if(appUsage.getPackageName().equals("com.android.settings")){continue;}
                 AppDetails appDetails = dao.getAppDetails(appUsage.getPackageName());
                 String category = appDetails.getCategory();
 

@@ -2,8 +2,10 @@ package com.cs565project.smart;
 
 
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -18,6 +20,9 @@ import androidx.fragment.app.FragmentPagerAdapter;
 import androidx.viewpager.widget.ViewPager;
 
 //import com.cs565project.smart.fragments.LogMoodFragment;
+import com.cs565project.smart.db.AppDao;
+import com.cs565project.smart.db.AppDatabase;
+import com.cs565project.smart.db.entities.AppDetails;
 import com.cs565project.smart.fragments.ReportsFragment;
 import com.cs565project.smart.fragments.RestrictionsFragment;
 import com.cs565project.smart.service.AppMonitorService;
@@ -26,6 +31,7 @@ import com.google.android.material.tabs.TabLayout;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.Executors;
 
 /**
  * The main entry point into the app. We have 2 tabs, managed by a TabLayout. Corresponding views
@@ -34,10 +40,25 @@ import java.util.List;
  */
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
     public static final String KEY_FIRST_START = "firstStart";
+    private final long defaultEntertainmentTime=5400000;
 
     private androidx.drawerlayout.widget.DrawerLayout myDrawer;
     private TextView myToggleButton;
     private boolean isServiceRunning;
+
+
+//            private Runnable showData=new Runnable() {
+//        @Override
+//        public void run() {
+//            AppDao appDao= AppDatabase.getAppDatabase(getApplicationContext()).appDao();
+//
+//            List<AppDetails> appDetails=appDao.getAppDetails();
+//
+//            for(AppDetails appDetails1:appDetails){
+//                Log.d("Test Entertainment ", appDetails1.getAppName()+" "+appDetails1.getIsEntertainmentApp());
+//            }
+//
+//    }};
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -78,7 +99,29 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         MainTabsAdapter adapter = new MainTabsAdapter(getSupportFragmentManager());
         pager.setAdapter(adapter);
         tabs.setupWithViewPager(pager);
+
+
+        //Test
+
+        //testing if i select apps as entertainment their app details change or not
+
+//        new Thread() {
+//            @Override
+//            public void run() {
+//                AppDao appDao= AppDatabase.getAppDatabase(getApplicationContext()).appDao();
+//
+//                List<AppDetails> appDetails=appDao.getAppDetails();
+//
+//                for(AppDetails appDetails1:appDetails){
+//                    Log.d("Test Entertainment ", appDetails1.getAppName()+" "+appDetails1.getIsEntertainmentApp());
+//                }
+//
+//            }
+//        }.start();
+
+//        Executors.newSingleThreadExecutor().execute(showData);
     }
+
 
     /**
      * Setup our toolbar and navigation drawer.
@@ -146,7 +189,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 setToggleDrawable();
                 break;
             case R.id.view_intro:
-                Intent introIntent = new Intent(this, IntroActivity.class);
+
+                IntroActivity introActivity=new IntroActivity();
+                introActivity.isonlyEntertainementSetting=false;
+                Intent introIntent = new Intent(this, introActivity.getClass());
                 startActivity(introIntent);
                 myDrawer.closeDrawer(androidx.core.view.GravityCompat.START);
                 break;
@@ -157,7 +203,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
      * Adapter to populate tabs on the main activity.
      * We have 2 tabs: one to show user's activity reports, and one where the user can set blocking
      * parameters. See FRAGMENT_CLASSES to see the fragments that are returned.
-     * Created by aravind on 3/22/18.
      */
     public static class MainTabsAdapter extends FragmentPagerAdapter {
 

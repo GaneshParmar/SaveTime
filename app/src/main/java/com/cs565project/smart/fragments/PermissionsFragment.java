@@ -18,6 +18,8 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.LinearLayout;
+import android.widget.Switch;
 import android.widget.TextView;
 
 import com.cs565project.smart.R;
@@ -57,6 +59,8 @@ public class PermissionsFragment extends Fragment {
 //            TextView tv1 = v.findViewById(R.id.appMonitoringEnabledText);
 //            tv1.setText(usageAccessEnabled());
 
+
+
         }
     };
 
@@ -69,23 +73,6 @@ public class PermissionsFragment extends Fragment {
 
 //            TextView tv2 = v.findViewById(R.id.overlayEnabledText);
 //            tv2.setText(overlayAccessEnabled());
-        }
-    };
-
-    private View.OnClickListener cameraAccessListener = new View.OnClickListener() {
-
-        public void onClick(View v) {
-            if (getActivity() == null) return;
-            if (ContextCompat.checkSelfPermission(getActivity(), Manifest.permission.CAMERA)
-                    == PackageManager.PERMISSION_DENIED) {
-                ActivityCompat.requestPermissions(getActivity(),
-                        new String[]{Manifest.permission.CAMERA},
-                        MY_PERMISSIONS_REQUEST_EXTERNAL_FILE);
-            }
-
-//            TextView tv3 = v.findViewById(R.id.cameraEnabledText);
-//            tv3.setText(cameraEnabled());
-
         }
     };
 
@@ -104,40 +91,36 @@ public class PermissionsFragment extends Fragment {
         }
     };
 
-    private String externalStorageEnabled() {
-        if (getActivity() == null) return "";
+    private boolean externalStorageEnabled() {
+        if (getActivity() == null) return false;
         return (ContextCompat.checkSelfPermission(getActivity(), Manifest.permission.READ_EXTERNAL_STORAGE)
-                == PackageManager.PERMISSION_DENIED) ? "Not Enabled" : "Enabled";
+                == PackageManager.PERMISSION_DENIED) ? false : true;
     }
 
-    private String cameraEnabled() {
-        if (getActivity() == null) return "";
-        return (ContextCompat.checkSelfPermission(getActivity(), Manifest.permission.CAMERA)
-                == PackageManager.PERMISSION_DENIED) ? "Not Enabled" : "Enabled";
+    private boolean usageAccessEnabled() {
+        if (getActivity() == null) return false;
+        return !UsageStatsUtil.hasUsageAccess(getActivity()) ? false : true;
     }
 
-    private String usageAccessEnabled() {
-        if (getActivity() == null) return "";
-        return !UsageStatsUtil.hasUsageAccess(getActivity()) ? "Not Enabled" : "Enabled";
-    }
-
-    private String overlayAccessEnabled() {
-        return ((Build.VERSION.SDK_INT >= 23 && !Settings.canDrawOverlays(getContext()))) ? "Not Enabled" : "Enabled";
+    private boolean overlayAccessEnabled() {
+        return ((Build.VERSION.SDK_INT >= 23 && !Settings.canDrawOverlays(getContext()))) ? false: true;
     }
 
 
     @Override
     public void onResume() {
         super.onResume();
-        TextView tv1 = v.findViewById(R.id.appMonitoringEnabledText);
-        TextView tv2 = v.findViewById(R.id.overlayEnabledText);
-        TextView tv3 = v.findViewById(R.id.cameraEnabledText);
-        TextView tv4 = v.findViewById(R.id.externalStorageEnabledText);
+        Switch tv1 = v.findViewById(R.id.switch1);
+        Switch tv2 = v.findViewById(R.id.switch2);
+        Switch tv4 = v.findViewById(R.id.switch3);
 
-        tv1.setText(usageAccessEnabled());
-        tv2.setText(overlayAccessEnabled());
-        tv3.setText(cameraEnabled());
-        tv4.setText(externalStorageEnabled());
+        tv1.setChecked(usageAccessEnabled());
+        tv2.setChecked(overlayAccessEnabled());
+        tv4.setChecked(externalStorageEnabled());
+
+
+
+
     }
 
     @Override
@@ -145,13 +128,11 @@ public class PermissionsFragment extends Fragment {
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
         v = inflater.inflate(R.layout.fragment_permissions, container, false);
-        Button usageAccessButton = v.findViewById(R.id.usageEnableButton);
-        Button overlayAccessButton = v.findViewById(R.id.overlayEnableButton);
-        Button cameraAccessButton = v.findViewById(R.id.cameraEnableButton);
-        Button externalStorageAccessButton = v.findViewById(R.id.externalStorageEnableButton);
+        LinearLayout usageAccessButton = v.findViewById(R.id.usageEnableButton);
+        LinearLayout overlayAccessButton = v.findViewById(R.id.overlayEnableButton);
+        LinearLayout externalStorageAccessButton = v.findViewById(R.id.externalStorageEnableButton);
         usageAccessButton.setOnClickListener(usageAccessListener);
         overlayAccessButton.setOnClickListener(overlayAccessListener);
-        cameraAccessButton.setOnClickListener(cameraAccessListener);
         externalStorageAccessButton.setOnClickListener(externalStorageAccessListener);
 
         return v;

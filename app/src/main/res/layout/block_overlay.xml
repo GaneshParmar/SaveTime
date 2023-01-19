@@ -4,12 +4,99 @@
     android:layout_height="match_parent"
     android:background="@android:color/black"
     style="@style/AppTheme">
+
+    <LinearLayout
+        android:id="@+id/enter_block_overlay"
+        android:visibility="visible"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:background="#000000"
+        android:gravity="center"
+        >
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="You exceeded todays Entertainment Time"
+            android:textSize="28sp"
+            android:textColor="@android:color/white"
+            android:textAlignment="center"
+            android:layout_marginTop="40dp"
+            />
+        <ImageView
+            android:id="@+id/enter_app_icon"
+            android:layout_width="32dp"
+            android:layout_height="32dp"
+            android:layout_marginTop="10dp"
+            android:src="@drawable/ic_done_white"
+            />
+        <TextView
+            android:id="@+id/enter_app_name"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="18sp"
+            android:textColor="@android:color/white"
+            android:layout_marginTop="10dp"
+            android:text="Clash Of Clans"
+            />
+
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_margin="20dp"
+            android:background="@drawable/entertainment_bg"
+            >
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/entertainment_note"
+                android:textSize="20dp"
+                android:textColor="@android:color/white"
+                android:textAlignment="center"
+                />
+        </LinearLayout>
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textColor="@color/white"
+                android:textSize="20dp"
+                android:textAlignment="center"
+                android:text="@string/tommorow_enter_note"/>
+
+        <TextView
+            android:id="@+id/tommorow_enter_time"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="1hr/ 20min"
+            android:textSize="50dp"
+            android:layout_marginTop="20dp"
+            android:textColor="@color/green"
+            />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal"
+            android:text="Note: If you want to use the app then change the Your Save Time app Running to Paused"
+            android:textColor="@color/white"
+            android:layout_marginTop="50dp"
+            android:layout_marginHorizontal="30dp"
+            android:background="@drawable/border_bg"
+            android:padding="15dp"
+            />
+
+
+    </LinearLayout>
+
     <LinearLayout
         android:id="@+id/overlay_page_1"
         android:orientation="vertical" android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:gravity="center_vertical"
-        android:background="#99000000">
+        android:background="#000000"
+        android:visibility="gone"
+        >
 
         <LinearLayout
             android:layout_width="wrap_content"
@@ -56,7 +143,17 @@
             android:layout_marginEnd="@dimen/overlay_margin"
             android:background="?android:attr/selectableItemBackground"/>
 
-        <TextView
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content">
+
+        </LinearLayout>
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            >
+                    <TextView
             android:id="@+id/activity_suggestions_title"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -112,7 +209,7 @@
             android:textStyle="italic"
             android:background="@drawable/rounded_rect_bg_bottom"
             android:textSize="11sp"/>
-
+    </LinearLayout>
 
         <TextView
             android:layout_width="wrap_content"
@@ -132,7 +229,7 @@
         android:visibility="gone"
         android:gravity="center"
         android:orientation="vertical"
-        android:background="#99000000"
+        android:background="#000000"
         android:padding="@dimen/overlay_margin">
         <TextView
             android:id="@+id/override_block_message"
@@ -163,4 +260,5 @@
                 android:backgroundTint="@color/colorAccent"/>
         </LinearLayout>
     </LinearLayout>
+
 </FrameLayout>

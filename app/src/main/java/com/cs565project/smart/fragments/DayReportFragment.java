@@ -4,15 +4,22 @@ package com.cs565project.smart.fragments;
 import android.animation.TimeInterpolator;
 import android.annotation.SuppressLint;
 import android.content.Context;
+import android.content.Intent;
+import android.content.res.Resources;
+import android.graphics.Bitmap;
+import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Typeface;
+import android.graphics.drawable.BitmapDrawable;
+import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.os.Handler;
 
 import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
-import android.app.FragmentManager;
+import androidx.fragment.app.FragmentManager;
+import androidx.fragment.app.FragmentTransaction;
 import androidx.recyclerview.widget.DefaultItemAnimator;
 import androidx.recyclerview.widget.DividerItemDecoration;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -32,8 +39,13 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewTreeObserver;
 import android.view.animation.AccelerateDecelerateInterpolator;
+import android.widget.Button;
+import android.widget.LinearLayout;
+import android.widget.TextView;
 import android.widget.Toast;
 
+import com.cs565project.smart.IntroActivity;
+import com.cs565project.smart.MainActivity;
 import com.cs565project.smart.R;
 import com.cs565project.smart.db.AppDao;
 import com.cs565project.smart.db.AppDatabase;
@@ -42,16 +54,20 @@ import com.cs565project.smart.db.entities.DailyAppUsage;
 //import com.cs565project.smart.db.entities.MoodLog;
 import com.cs565project.smart.fragments.adapter.ChartLegendAdapter;
 import com.cs565project.smart.recommender.RestrictionRecommender;
+import com.cs565project.smart.service.AppMonitorService;
 import com.cs565project.smart.util.AppInfo;
 import com.cs565project.smart.util.DbUtils;
 //import com.cs565project.smart.util.EmotionUtil;
 import com.cs565project.smart.util.GraphUtil;
+import com.cs565project.smart.util.PreferencesHelper;
 import com.cs565project.smart.util.UsageStatsUtil;
 import com.github.mikephil.charting.animation.Easing;
+import com.github.mikephil.charting.charts.Chart;
 import com.github.mikephil.charting.charts.PieChart;
 import com.github.mikephil.charting.data.PieData;
 import com.github.mikephil.charting.data.PieDataSet;
 import com.github.mikephil.charting.data.PieEntry;
+import com.github.mikephil.charting.utils.MPPointF;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -61,6 +77,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 
@@ -74,12 +91,12 @@ public class DayReportFragment extends Fragment implements ChartLegendAdapter.On
     private static final String EXTRA_DATE = "extra_date";
     private static final String EXTRA_CATEGORY = "category";
 
-    private static final float PIE_HOLE_RADIUS = 80f;
-    private static final float PIE_SCALE_FACTOR = 0.3f;
+    private static final float PIE_HOLE_RADIUS = 90f;
+    private static final float PIE_SCALE_FACTOR = 0f;
 
     public static final int[] PIE_COLORS = {
-            rgb("#bf360c"), rgb("#006064"), rgb("#5d4037"), rgb("#827717"),
-            rgb("#f57f17"), rgb("#37474f"), rgb("#4a148c"), rgb("#ad1457"),
+            rgb("#be1e2e"), rgb("#f04136"), rgb("#f15a2b"), rgb("#e2b37c"),
+            rgb("#2b3890"), rgb("#37474f"), rgb("#4a148c"), rgb("#ad1457"),
             rgb("#006064"), rgb("#0d47a1"), rgb("#fdd835"), rgb("#ff1744"),
             rgb("#000000")
     };
@@ -90,16 +107,25 @@ public class DayReportFragment extends Fragment implements ChartLegendAdapter.On
     private PieChart myPieChart, myPieChartSecondary;
     private SwipeRefreshLayout myRefreshLayout;
     private RecyclerView myLegend;
+    private Button viewMoreBtn,showEntertainmentSettingBtn;
+    private TextView entertainmentTimeLeft,entertainmentTime;
+    private LinearLayout entertaimentDiv;
 
     // Our state.
     private PieData myPieData, mySecondaryPieData;
-    private List<ChartLegendAdapter.LegendInfo> myLegendInfos;
+    private List<ChartLegendAdapter.LegendInfo> myLegendInfos,myLegendInfosAtStart;
     private long myTotalUsageTime;
     private Date myDate;
     private String myCurrentCategory;
     private int myPieX, myMinimizedPieX;
     private boolean myAnimatePie;
-    private String myMood;
+//    private String myMood;
+    //added 1/8/2023 G@nesh
+    private boolean viewMore;
+
+    //added 09/01/2023
+    private long totalEntertainmentTime,entertainmentTimeLeftToday,entertainmentTimeUsed;
+
 
     // For background execution.
     private Executor myExecutor = Executors.newSingleThreadExecutor();
@@ -112,11 +138,15 @@ public class DayReportFragment extends Fragment implements ChartLegendAdapter.On
         @Override
         public void run() {
             Context c = getActivity();
+
+
+
             if (c == null) return;
 
             // Read usage info from DB.
             AppDao dao = AppDatabase.getAppDatabase(c).appDao();
             List<DailyAppUsage> appUsages = dao.getAppUsage(new Date(UsageStatsUtil.getStartOfDayMillis(myDate)));
+            List<String> entertainmentApps=dao.getEntertainmentApps();
 
             // This map will hold the key value pairs to be inserted in the chart.
             Map<String, Long> usageMap = new HashMap<>();
@@ -125,7 +155,9 @@ public class DayReportFragment extends Fragment implements ChartLegendAdapter.On
             // Initialize state with defaults.
             Map<String, List<String>> subtitleInfo = new HashMap<>();
             myLegendInfos = new ArrayList<>();
+            myLegendInfosAtStart=new ArrayList<>();
             myTotalUsageTime = 0;
+            entertainmentTimeUsed=0;
 
             // Populate the usageMap.
             for (DailyAppUsage appUsage : appUsages) {
@@ -150,6 +182,8 @@ public class DayReportFragment extends Fragment implements ChartLegendAdapter.On
 //                    if (myCurrentCategory.equals(category)) {
                     Log.d("Test", appDetails.getPackageName()+" "+appUsage.getDailyUseTime());
 
+
+
                     myTotalUsageTime += appUsage.getDailyUseTime();
                         secondaryUsageMap.put(appDetails.getPackageName(), appUsage.getDailyUseTime());
 //                    }
@@ -159,13 +193,24 @@ public class DayReportFragment extends Fragment implements ChartLegendAdapter.On
                     myTotalUsageTime += appUsage.getDailyUseTime();
                     secondaryUsageMap.put(appDetails.getPackageName(), appUsage.getDailyUseTime());
                 }
+
+                if(entertainmentApps.contains(appUsage.getPackageName())){
+
+                    entertainmentTimeUsed+= appUsage.getDailyUseTime();
+
+                }
+
             }
 
 
             List<PieEntry> entries = processUsageMap(secondaryUsageMap, subtitleInfo, isInSecondaryView(), !isInSecondaryView());
             PieDataSet dataSet = new PieDataSet(entries, "App usage");
             dataSet.setColors(PIE_COLORS);
-            dataSet.setDrawValues(false);
+            dataSet.setDrawIcons(true);
+            dataSet.setIconsOffset(new MPPointF(0,15));
+            dataSet.setSliceSpace(5);
+
+
             myPieData = new PieData(dataSet);
 
             if (isInSecondaryView()) {
@@ -204,6 +249,7 @@ public class DayReportFragment extends Fragment implements ChartLegendAdapter.On
             for (String key : keys) {
                 long usage = usageMap.get(key);
                 Drawable icon = null;
+                Drawable iconD=null;
                 String title, subTitle;
 
                 if (isSecondaryData) {
@@ -212,7 +258,12 @@ public class DayReportFragment extends Fragment implements ChartLegendAdapter.On
                     AppInfo appInfo = new AppInfo(key, context);
                     title = appInfo.getAppName();
                     subTitle = key;
-                    icon = appInfo.getAppIcon();
+                    iconD= appInfo.getAppIcon();
+
+                    Bitmap iconBitmap = iconD==null?null:Bitmap.createScaledBitmap(getBitmapFromDrawable(iconD), 70, 70, false);
+
+                    icon=new BitmapDrawable(getResources(),iconBitmap);
+                    assert icon != null;
                 } else {
                     // In TOTAL state, the categories are the titles, and apps in them are the subtitles.
                     title = key;
@@ -226,12 +277,18 @@ public class DayReportFragment extends Fragment implements ChartLegendAdapter.On
                     entries.set(MAX_ENTRIES-1, entry);
 
                 } else {
-                    PieEntry entry = new PieEntry(usage, title);
+                    PieEntry entry = new PieEntry(usage, icon);
                     entries.add(entry);
+
                 }
 
                 if (addToLegend) {
-                    myLegendInfos.add(new ChartLegendAdapter.LegendInfo(title, subTitle, icon,
+                    if(i<MAX_ENTRIES) {
+                        myLegendInfosAtStart.add(new ChartLegendAdapter.LegendInfo(title, subTitle, iconD,
+                                usage, PIE_COLORS[Math.min(i, MAX_ENTRIES - 1)]));
+                    }
+
+                    myLegendInfos.add(new ChartLegendAdapter.LegendInfo(title, subTitle, iconD,
                             usage, PIE_COLORS[Math.min(i, MAX_ENTRIES - 1)]));
                 }
                 i++;
@@ -240,7 +297,17 @@ public class DayReportFragment extends Fragment implements ChartLegendAdapter.On
             return entries;
         }
     };
+    @NonNull
+    private Bitmap getBitmapFromDrawable(@NonNull Drawable drawable) {
 
+        if (drawable==null)return null;
+
+        final Bitmap bmp = Bitmap.createBitmap(drawable.getIntrinsicWidth(), drawable.getIntrinsicHeight(), Bitmap.Config.ARGB_8888);
+        final Canvas canvas = new Canvas(bmp);
+        drawable.setBounds(0, 0, canvas.getWidth(), canvas.getHeight());
+        drawable.draw(canvas);
+        return bmp;
+    }
     // Runnable to be run in the UI thread after our state has been updated.
     private Runnable postLoadData = new Runnable() {
         @Override
@@ -250,11 +317,16 @@ public class DayReportFragment extends Fragment implements ChartLegendAdapter.On
                 return;
             }
 
+            //added 09/01/2023
+            updateEnterTextFields();
+
             // Update the main pie chart data.
             if (myAnimatePie) {
+
                 myPieChart.animateY(600, Easing.EaseInOutQuad);
                 myAnimatePie = false;
             }
+
             myPieChart.setData(myPieData);
 
             if (!isInSecondaryView()) {
@@ -265,15 +337,12 @@ public class DayReportFragment extends Fragment implements ChartLegendAdapter.On
 
             // The center text shows duration, the current category being viewed, and the recorded mood.
             SpannableString centerTextDuration =
-                    new SpannableString(UsageStatsUtil.formatDuration(myTotalUsageTime, context));
+                    new SpannableString(formateDateToHandMin(UsageStatsUtil.formatDuration(myTotalUsageTime, context)));
             centerTextDuration.setSpan(new RelativeSizeSpan(1.4f), 0, centerTextDuration.length(), 0);
             centerTextDuration.setSpan(new StyleSpan(Typeface.BOLD), 0, centerTextDuration.length(), 0);
-            String centerTextCategory = (!isInSecondaryView()) ?
-                    String.format(getString(R.string.duration_in_category), Html.fromHtml(myCurrentCategory).toString()) :
-                    getString(R.string.total);
-            SpannableString centerTextMood = new SpannableString(
-                    getString(R.string.mood) + " " + myMood);
-            CharSequence centerText = TextUtils.concat(centerTextDuration, "\n", centerTextCategory, "\n\n", centerTextMood);
+
+//            String centerTextCategory = getString(R.string.total);
+            CharSequence centerText = TextUtils.concat(centerTextDuration);
 
             if (!isInSecondaryView()) {
                 myPieChartSecondary.setCenterText(centerText);
@@ -283,22 +352,65 @@ public class DayReportFragment extends Fragment implements ChartLegendAdapter.On
             myPieChart.invalidate();
             myPieChartSecondary.invalidate();
 
-            // Update the chart legend.
-            ChartLegendAdapter adapter = (ChartLegendAdapter) myLegend.getAdapter();
-            if (adapter == null) {
-                adapter = new ChartLegendAdapter(myLegendInfos, myTotalUsageTime, context, DayReportFragment.this);
-                myLegend.setAdapter(adapter);
-            } else {
-                adapter.setData(myLegendInfos, myTotalUsageTime);
-            }
+            setAdapter(context);
+
             myLegend.getAdapter().notifyDataSetChanged();
 
+//            test> changeAdapterRecycleView(context);
             // Hide any loading spinners.
             myRefreshLayout.setRefreshing(false);
+
+            entertaimentDiv.setVisibility(View.VISIBLE);
+            viewMoreBtn.setVisibility(View.VISIBLE);
+
+
+        }
+
+
+
+        private String formateDateToHandMin(String formatDuration) {
+
+            String[] duration=formatDuration.split(":");
+            if(duration.length==1) return duration[0];
+            String hour=duration[0];
+            String[] min=duration[1].split("hr");
+            return hour+" hr "+min[0]+"min";
 
         }
     };
 
+        private void setAdapter(Context context) {
+            // Update the chart legend.
+            ChartLegendAdapter adapter = (ChartLegendAdapter) myLegend.getAdapter();
+            if (adapter == null) {
+                if(viewMore){
+                    adapter = new ChartLegendAdapter(myLegendInfos, myTotalUsageTime, context, DayReportFragment.this);
+
+                }
+                else{
+                    adapter = new ChartLegendAdapter(myLegendInfosAtStart, myTotalUsageTime, context, DayReportFragment.this);
+
+                }
+                myLegend.setAdapter(adapter);
+            } else {
+                if(viewMore){
+                    Log.d("Inside","Hello");
+                    adapter.setData(myLegendInfos,myTotalUsageTime);
+                }
+                else {
+                    adapter.setData(myLegendInfosAtStart, myTotalUsageTime);
+
+                }
+            }
+        }
+
+        public void changeAdapterRecycleView(Context context){
+
+            Log.d("Test Inside","inside");
+            viewMore=true;
+            this.setAdapter(context);
+            myLegend.getAdapter().notifyDataSetChanged();
+        }
     public static DayReportFragment getInstance(long dateInMillis, String category) {
         Bundle args = new Bundle();
         args.putLong(EXTRA_DATE, dateInMillis);
@@ -316,11 +428,32 @@ public class DayReportFragment extends Fragment implements ChartLegendAdapter.On
         return myCurrentCategory;
     }
 
+    private void updateEnterTextFields(){
+        //Preferences of 09/01/2022
+        //Entertainment Time get here
+
+        totalEntertainmentTime=PreferencesHelper.getLongPreference(getContext(),AppMonitorService.ThreshHoldEntertainmentTime,AppMonitorService.defaultThresholdEnterTime);
+        entertainmentTimeLeftToday= (totalEntertainmentTime - entertainmentTimeUsed)<0?0:(totalEntertainmentTime - entertainmentTimeUsed);
+
+        PreferencesHelper.setPreference(getContext(),AppMonitorService.leftEntertainmentTime,entertainmentTimeLeftToday);
+
+
+
+        //added 09/01/2023
+        //setting the entertainment time
+        entertainmentTimeLeft.setText(""+UsageStatsUtil.formatDuration(entertainmentTimeLeftToday,getContext()));
+        entertainmentTime.setText(""+UsageStatsUtil.formatDuration(totalEntertainmentTime,getContext()));
+
+        if(entertainmentTimeLeftToday==0){
+            entertainmentTimeLeft.setTextColor(getResources().getColor(R.color.red));
+        }
+    }
+
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
 
-//        myEmotionUtil = new EmotionUtil(getActivity());
+
 
         // Inflate the layout for this fragment
         myRootView = inflater.inflate(R.layout.fragment_day_report, container, false);
@@ -330,6 +463,36 @@ public class DayReportFragment extends Fragment implements ChartLegendAdapter.On
         myPieChart = myRootView.findViewById(R.id.pie_chart);
         myPieChartSecondary = myRootView.findViewById(R.id.pie_chart_secondary);
         myLegend = myRootView.findViewById(R.id.pie_categories_list);
+        viewMoreBtn=myRootView.findViewById(R.id.viewmore);
+        entertainmentTime=myRootView.findViewById(R.id.entertainment_time);
+        entertainmentTimeLeft=myRootView.findViewById(R.id.time_left);
+        showEntertainmentSettingBtn=myRootView.findViewById(R.id.entertainment_options);
+        entertaimentDiv=myRootView.findViewById(R.id.entertaimentDiv);
+
+
+        entertaimentDiv.setVisibility(View.GONE);
+        viewMoreBtn.setVisibility(View.GONE);
+
+        myAnimatePie=true;
+
+        viewMoreBtn.setOnClickListener(
+                v -> {
+                        Log.d("Test","btn Clicked");
+                        changeAdapterRecycleView(getContext());
+                        v.setVisibility(View.GONE);
+                }
+        );
+
+
+        showEntertainmentSettingBtn.setOnClickListener(
+                v->{
+                    IntroActivity newIntroActivity=new IntroActivity();
+                    newIntroActivity.isonlyEntertainementSetting=true;
+                    Intent callOnBoardEntertainment=new Intent(getContext(), newIntroActivity.getClass());
+
+                    startActivity(callOnBoardEntertainment);
+
+                });
 
         // Listen for layout completion, so that we can start animations.
         myPieChart.getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
@@ -373,6 +536,8 @@ public class DayReportFragment extends Fragment implements ChartLegendAdapter.On
 
     private void onRefresh() {
         myAnimatePie = true;
+        viewMore=false;
+        viewMoreBtn.setVisibility(View.VISIBLE);
         setPieData();
     }
 
@@ -381,7 +546,7 @@ public class DayReportFragment extends Fragment implements ChartLegendAdapter.On
 //                || myCurrentCategory != null && !myCurrentCategory.isEmpty();
     }
 
-    @SuppressLint("ClickableViewAccessibility")
+    @SuppressLint({"ClickableViewAccessibility", "ResourceAsColor"})
     private void setupPieAndLegendView() {
         Context context = getActivity();
         if (context == null) return;
@@ -391,10 +556,15 @@ public class DayReportFragment extends Fragment implements ChartLegendAdapter.On
             pieChart.setUsePercentValues(true);
             pieChart.setEntryLabelColor(Color.BLACK);
             pieChart.setHoleRadius(PIE_HOLE_RADIUS);
-            pieChart.setTransparentCircleRadius(PIE_HOLE_RADIUS + 5);
             pieChart.setDrawCenterText(true);
-            pieChart.setCenterTextSize(22);
+            pieChart.setCenterTextSize(20);
             pieChart.setDrawEntryLabels(false);
+           pieChart.animateX(1000);
+            pieChart.setExtraOffsets(15,15,15,15);
+//            pieChart.setDrawRoundedSlices(true);
+//            pieChart.setTransparentCircleColor(Color.WHITE);
+//            pieChart.setTransparentCircleAlpha(255);
+
         }
         View.OnTouchListener existingPieListener = myPieChart.getOnTouchListener();
         myPieChart.setOnTouchListener((v, event) -> {
@@ -511,4 +681,8 @@ public class DayReportFragment extends Fragment implements ChartLegendAdapter.On
     public void onCancel() {
 
     }
+
+
+
+
 }

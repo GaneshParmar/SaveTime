@@ -15,8 +15,11 @@ public class Category {
 
     public boolean shouldRestrict;
 
+
+
     public Category(@NonNull String name, boolean shouldRestrict) {
         this.name = name;
         this.shouldRestrict = shouldRestrict;
+
     }
 }

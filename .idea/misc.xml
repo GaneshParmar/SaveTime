@@ -4,21 +4,23 @@
     <option name="filePathToZoomLevelMap">
       <map>
         <entry key="..\:/Users/Admin/AndroidStudioProjects/TvRemote/app/src/main/res/drawable/academics_icon.xml" value="0.1095" />
+        <entry key="..\:/Users/Admin/AndroidStudioProjects/TvRemote/app/src/main/res/drawable/border_bg.xml" value="0.187" />
+        <entry key="..\:/Users/Admin/AndroidStudioProjects/TvRemote/app/src/main/res/drawable/entertainment_bg.xml" value="0.187" />
         <entry key="..\:/Users/Admin/AndroidStudioProjects/TvRemote/app/src/main/res/drawable/ic_arrow_down.xml" value="0.1095" />
         <entry key="..\:/Users/Admin/AndroidStudioProjects/TvRemote/app/src/main/res/drawable/ic_camera_black_24dp.xml" value="0.1095" />
         <entry key="..\:/Users/Admin/AndroidStudioProjects/TvRemote/app/src/main/res/drawable/ic_date_range_black_24dp.xml" value="0.1095" />
         <entry key="..\:/Users/Admin/AndroidStudioProjects/TvRemote/app/src/main/res/layout/activity_intro.xml" value="0.1" />
         <entry key="..\:/Users/Admin/AndroidStudioProjects/TvRemote/app/src/main/res/layout/activity_main.xml" value="0.2" />
         <entry key="..\:/Users/Admin/AndroidStudioProjects/TvRemote/app/src/main/res/layout/activity_settings.xml" value="0.23802083333333332" />
-        <entry key="..\:/Users/Admin/AndroidStudioProjects/TvRemote/app/src/main/res/layout/block_overlay.xml" value="0.18645833333333334" />
+        <entry key="..\:/Users/Admin/AndroidStudioProjects/TvRemote/app/src/main/res/layout/block_overlay.xml" value="0.264" />
         <entry key="..\:/Users/Admin/AndroidStudioProjects/TvRemote/app/src/main/res/layout/date_range_picker.xml" value="0.18645833333333334" />
         <entry key="..\:/Users/Admin/AndroidStudioProjects/TvRemote/app/src/main/res/layout/fragment_account.xml" value="0.165625" />
         <entry key="..\:/Users/Admin/AndroidStudioProjects/TvRemote/app/src/main/res/layout/fragment_aggreagate_report.xml" value="0.2" />
-        <entry key="..\:/Users/Admin/AndroidStudioProjects/TvRemote/app/src/main/res/layout/fragment_day_report.xml" value="0.264" />
+        <entry key="..\:/Users/Admin/AndroidStudioProjects/TvRemote/app/src/main/res/layout/fragment_day_report.xml" value="0.2" />
         <entry key="..\:/Users/Admin/AndroidStudioProjects/TvRemote/app/src/main/res/layout/fragment_general_settings.xml" value="0.4" />
         <entry key="..\:/Users/Admin/AndroidStudioProjects/TvRemote/app/src/main/res/layout/fragment_log_mood.xml" value="0.1" />
-        <entry key="..\:/Users/Admin/AndroidStudioProjects/TvRemote/app/src/main/res/layout/fragment_onboarding_restrictions.xml" value="0.152" />
-        <entry key="..\:/Users/Admin/AndroidStudioProjects/TvRemote/app/src/main/res/layout/fragment_permissions.xml" value="0.14895833333333333" />
+        <entry key="..\:/Users/Admin/AndroidStudioProjects/TvRemote/app/src/main/res/layout/fragment_onboarding_restrictions.xml" value="0.2" />
+        <entry key="..\:/Users/Admin/AndroidStudioProjects/TvRemote/app/src/main/res/layout/fragment_permissions.xml" value="0.2" />
         <entry key="..\:/Users/Admin/AndroidStudioProjects/TvRemote/app/src/main/res/layout/fragment_recommendation_settings.xml" value="0.4" />
         <entry key="..\:/Users/Admin/AndroidStudioProjects/TvRemote/app/src/main/res/layout/fragment_reports.xml" value="0.176" />
         <entry key="..\:/Users/Admin/AndroidStudioProjects/TvRemote/app/src/main/res/layout/fragment_restrictions.xml" value="0.14895833333333333" />

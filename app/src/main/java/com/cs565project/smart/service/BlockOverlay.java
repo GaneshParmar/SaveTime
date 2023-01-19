@@ -57,6 +57,8 @@ class BlockOverlay extends OverlayBase implements View.OnTouchListener, View.OnC
     private int page = 0;
     private float scrollStartY = 0;
     private float scrollStartTime = 0;
+    private boolean entertainmentBlock;
+    private String entertainementTimeLeft;
 
     BlockOverlay(Context context, WindowManager windowManager) {
         super(context, windowManager, R.layout.block_overlay);
@@ -70,11 +72,19 @@ class BlockOverlay extends OverlayBase implements View.OnTouchListener, View.OnC
 //        myEmotionUtil = new EmotionUtil(context);
     }
 
-    public void setApp(AppDetails appDetails, Drawable icon) {
+    public void setApp(AppDetails appDetails, Drawable icon,boolean entertainmentBlock) {
         myAppDetails = appDetails;
         myDrawable = icon;
+        this.entertainmentBlock=entertainmentBlock;
     }
 
+
+    public void setApp(AppDetails appDetails, Drawable icon,boolean entertainmentBlock, String formatDuration){
+        myAppDetails = appDetails;
+        myDrawable = icon;
+        this.entertainmentBlock=entertainmentBlock;
+        this.entertainementTimeLeft=formatDuration;
+    }
     public void setNewsItems(List<NewsItem> newsItems) {
         myNewsItems = newsItems;
     }
@@ -90,22 +100,49 @@ class BlockOverlay extends OverlayBase implements View.OnTouchListener, View.OnC
         LayoutInflater inflater = LayoutInflater.from(getContext());
         LinearLayout news = rootView.findViewById(R.id.news_feed);
         news.removeAllViews();
-        for (NewsItem newsItem : myNewsItems) {
-            View articleLayout = inflater.inflate(R.layout.list_item_news, news, false);
-            TextView titleView = articleLayout.findViewById(R.id.article_title),
-                    sourceView = articleLayout.findViewById(R.id.article_source);
-            ImageView iconView = articleLayout.findViewById(R.id.article_icon);
 
-            titleView.setText(newsItem.getTitle());
-            sourceView.setText(newsItem.getPublisher());
-            iconView.setImageDrawable(newsItem.getIcon());
+        LinearLayout enterBlock=rootView.findViewById(R.id.enter_block_overlay);
+        LinearLayout nonenterBlock=rootView.findViewById(PAGE_IDS[0]);
 
-            articleLayout.setOnClickListener(v -> {
-                    getContext().startActivity(new Intent(Intent.ACTION_VIEW, newsItem.getUri()));
-                    remove();
-            });
+        if(entertainmentBlock){
+            nonenterBlock.setVisibility(View.GONE);
+            enterBlock.setVisibility(View.VISIBLE);
 
-            news.addView(articleLayout);
+            TextView appView = rootView.findViewById(R.id.enter_app_name);
+            appView.setText(myAppDetails.getAppName());
+
+            ImageView iconView = rootView.findViewById(R.id.enter_app_icon);
+            iconView.setImageDrawable(myDrawable);
+
+            TextView tommEnterTimeLeft=rootView.findViewById(R.id.tommorow_enter_time);
+            tommEnterTimeLeft.setText(entertainementTimeLeft);
+        }
+        else{
+
+            enterBlock.setVisibility(View.GONE);
+            nonenterBlock.setVisibility(View.VISIBLE);
+
+        if(myNewsItems!=null && !myNewsItems.isEmpty()){
+
+            for (NewsItem newsItem : myNewsItems) {
+                View articleLayout = inflater.inflate(R.layout.list_item_news, news, false);
+                TextView titleView = articleLayout.findViewById(R.id.article_title),
+                        sourceView = articleLayout.findViewById(R.id.article_source);
+                ImageView iconView = articleLayout.findViewById(R.id.article_icon);
+
+                titleView.setText(newsItem.getTitle());
+                sourceView.setText(newsItem.getPublisher());
+                iconView.setImageDrawable(newsItem.getIcon());
+
+                articleLayout.setOnClickListener(v -> {
+                    Intent myIntent=new Intent(Intent.ACTION_VIEW, newsItem.getUri());
+                    myIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                        getContext().startActivity(myIntent);
+                        remove();
+                });
+
+                news.addView(articleLayout);
+            }
         }
 
         StringBuilder activityRecommendation = new StringBuilder();
@@ -121,6 +158,8 @@ class BlockOverlay extends OverlayBase implements View.OnTouchListener, View.OnC
         recommendationView.setText(activityRecommendation.toString());
 
         if (myAppDetails == null) return;
+
+
 
         TextView appView = rootView.findViewById(R.id.app_name);
         appView.setText(myAppDetails.getAppName());
@@ -170,6 +209,9 @@ class BlockOverlay extends OverlayBase implements View.OnTouchListener, View.OnC
 //        }
     }
 
+    }
+
+
     @Override
     WindowManager.LayoutParams buildLayoutParams() {
         int overlayType = android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O ?
@@ -182,7 +224,7 @@ class BlockOverlay extends OverlayBase implements View.OnTouchListener, View.OnC
                         | WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE
                         | WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL,
                 PixelFormat.TRANSLUCENT);
-    }
+        }
 
     @Override
     public boolean onTouch(View v, MotionEvent event) {
@@ -253,7 +295,9 @@ class BlockOverlay extends OverlayBase implements View.OnTouchListener, View.OnC
             Intent serviceIntent = new Intent(getContext(), AppMonitorService.class).setAction(AppMonitorService.ACTION_BYPASS_BLOCK);
             getContext().startService(serviceIntent);
         } else if (v.getId() == R.id.more_details) {
-            getContext().startActivity(new Intent(getContext(), MainActivity.class));
+            Intent myIntent=new Intent(getContext(), MainActivity.class);
+            myIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            getContext().startActivity(myIntent);
         }
     }
 

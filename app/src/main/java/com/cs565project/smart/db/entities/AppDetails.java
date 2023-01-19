@@ -20,11 +20,16 @@ public class AppDetails {
 
     private int thresholdTime;
 
-    public AppDetails(@NonNull String packageName, String appName, String category, int thresholdTime) {
+    //added 08/01/2022
+    //this is the category if the app is entertaining
+    public boolean isEntertainmentApp;
+
+    public AppDetails(@NonNull String packageName, String appName, String category, int thresholdTime,boolean isEntertainmentApp) {
         this.packageName = packageName;
         this.appName = appName;
         this.category = category;
         this.thresholdTime = thresholdTime;
+        this.isEntertainmentApp=isEntertainmentApp;
     }
 
     @NonNull
@@ -42,5 +47,11 @@ public class AppDetails {
 
     public int getThresholdTime() {
         return thresholdTime;
+    }
+
+    //added 08/01/2022
+    //this is the category if the app is entertaining
+    public boolean getIsEntertainmentApp(){
+        return isEntertainmentApp;
     }
 }

@@ -13,8 +13,11 @@ import com.cs565project.smart.db.entities.DailyAppUsage;
 //import com.cs565project.smart.db.entities.MoodLog;
 import com.cs565project.smart.db.entities.RecommendationActivity;
 
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Set;
 
 /**
  * Data access object which provides queries, inserts, updates and deletes in the app database.
@@ -32,6 +35,9 @@ public interface AppDao {
 
     @Query("SELECT * FROM DailyAppUsage WHERE packageName = (:packageName)")
     List<DailyAppUsage> getAppUsage(String packageName);
+
+    @Query("SELECT sum(dailyUseTime) FROM DailyAppUsage WHERE date = (:date) And packageName != 'com.android.settings'")
+    long getTotalUsageTime(Date date);
 
     @Query("SELECT MIN(date) FROM DailyAppUsage")
     Date getUsageDataStartDate();
@@ -66,11 +72,19 @@ public interface AppDao {
     @Query("SELECT * FROM RecommendationActivity WHERE activityType = (:activityType)")
     List<RecommendationActivity> getRecommendationActivities(String activityType);
 
+    //added 08/01/2022
+    //Query for returning
+    @Query("SELECT packageName FROM APPDETAILS WHERE isEntertainmentApp = 1")
+    List<String> getEntertainmentApps();
+
     @Query("SELECT * FROM Category")
     List<Category> getCategories();
 
     @Query("SELECT name FROM Category WHERE shouldRestrict = (:shouldRestrict)")
     List<String> getCategories(boolean shouldRestrict);
+
+    @Query("UPDATE AppDetails Set isEntertainmentApp = 0 WHERE isEntertainmentApp = 1")
+    void removeAllEntertainMentApps();
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     void insertAppUsage(DailyAppUsage... appUsages);
@@ -94,6 +108,9 @@ public interface AppDao {
     @Update
     void updateRecommendationActivity(RecommendationActivity activity);
 
+
+
+    
     @Delete
     void deleteAppUsage(DailyAppUsage... appUsages);
     @Delete

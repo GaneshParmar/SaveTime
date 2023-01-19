@@ -1,10 +1,13 @@
 package com.cs565project.smart.service;
 
 import android.content.Context;
+import android.graphics.drawable.Drawable;
 import android.util.DisplayMetrics;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.WindowManager;
+
+import com.cs565project.smart.db.entities.AppDetails;
 
 /**
  * A base class for managing overlay windows.
@@ -93,4 +96,5 @@ public abstract class OverlayBase {
     public Context getContext() {
         return context;
     }
+
 }

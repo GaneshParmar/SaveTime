@@ -68,9 +68,14 @@
     <string name="app_overlay">App Overlay</string>
     <string name="camera">Camera</string>
     <string name="external_storage">External Storage</string>
-    <string name="onboarding_restrictions">Select apps in which you want to reduce usage. This is used for giving recommendations.</string>
+    <string name="onboarding_restrictions">Select apps which are in your Entertainment Category. This is used for giving recommendations.</string>
     <string name="create_account">Create a new Save Time Account</string>
     <string name="select_activities">Select productive activities you would like to incorporate into your schedule:</string>
     <string name="view_intro">View intro</string>
+    <string name="viewmore">viewmore</string>
+    <string name="todays_usage">Today\'s Usage</string>
+    <string name="your_entertainment_time">Your Entertainment Time</string>
+    <string name="entertainment_note">Your tommorroews entertainment time will depend on today usage do use your phone wisely and get more entertainemnt time!</string>
+    <string name="tommorow_enter_note">Watch out your tommorrow Entertainment time</string>
 
 </resources>

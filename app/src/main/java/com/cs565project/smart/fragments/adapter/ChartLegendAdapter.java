@@ -65,17 +65,18 @@ public class ChartLegendAdapter extends RecyclerView.Adapter<ChartLegendAdapter.
         holder.progressDrawable.setColorFilter(lighterColor, PorterDuff.Mode.MULTIPLY);
 
         // Set the legend color box.
+
         holder.legendColorBox.getDrawable().setColorFilter(color, PorterDuff.Mode.MULTIPLY);
 
-        // Set title and subtitle.
-        holder.title.setText(Html.fromHtml(entry.title));
-        holder.subtitle.setText(Html.fromHtml(entry.subTitle));
+            holder.title.setText(Html.fromHtml(entry.title==null?"": entry.title));
+            holder.subtitle.setText(Html.fromHtml(entry.subTitle==null?"": entry.subTitle));
 
         // Set app icon if available.
         if (entry.icon != null) {
             holder.appIcon.setImageDrawable(entry.icon);
             holder.appIcon.setVisibility(View.VISIBLE);
         } else {
+            // Set title and subtitle.
             holder.appIcon.setVisibility(View.GONE);
         }
 
