@@ -46,20 +46,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private TextView myToggleButton;
     private boolean isServiceRunning;
 
-
-//            private Runnable showData=new Runnable() {
-//        @Override
-//        public void run() {
-//            AppDao appDao= AppDatabase.getAppDatabase(getApplicationContext()).appDao();
-//
-//            List<AppDetails> appDetails=appDao.getAppDetails();
-//
-//            for(AppDetails appDetails1:appDetails){
-//                Log.d("Test Entertainment ", appDetails1.getAppName()+" "+appDetails1.getIsEntertainmentApp());
-//            }
-//
-//    }};
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
